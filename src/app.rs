@@ -1,12 +1,12 @@
-/// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct MMRApp {
     // Example stuff:
     label: String,
 
-    #[serde(skip)] // This how you opt-out of serialization of a field
-    value: f32,
+    num_players: i32,
+    // #[serde(skip)] // This how you opt-out of serialization of a field
+    // value: f32,
 }
 
 impl Default for MMRApp {
@@ -14,7 +14,8 @@ impl Default for MMRApp {
         Self {
             // Example stuff:
             label: "Hello World!".to_owned(),
-            value: 2.7,
+            num_players: 4,
+            // value: 2.7,
         }
     }
 }
@@ -58,28 +59,67 @@ impl eframe::App for MMRApp {
                             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                         }
                     });
-                    ui.add_space(16.0);
                 }
 
+                ui.menu_button("Players", |ui| {
+                    if ui.button("Add").clicked() {}
+                    if ui.button("Delete").clicked() {}
+                });
+                ui.add_space(400.0);
                 egui::widgets::global_dark_light_mode_buttons(ui);
             });
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
-            ui.heading("quick multiplayer MMR");
+            // ui.heading("quick multiplayer MMR");
 
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(&mut self.label);
-            });
+            // ui.horizontal(|ui| {
+            //     ui.label(" ");
+            // });
 
-            ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                self.value += 1.0;
-            }
+            ui.label("Enter the players and their rankings for a match, then click Calculate to show their new MMR.");
+            ui.label("If a player didn't participate in the match, leave their rank empty.");
+            ui.label("Use the Players menu up top to add and delete players.");
+
+            // ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
+            // if ui.button("Increment").clicked() {
+            //     self.value += 1.0;
+            // }
 
             ui.separator();
+
+            egui::Grid::new("my_grid")
+            .striped(true)
+            .min_col_width(100.0)
+            .num_columns(3)
+            .show(ui, |ui| {
+                for row in 0..=self.num_players {
+                    if row == 0 {
+                        ui.label("Player");
+                        ui.label("Match rank");
+                        ui.label("MMR");
+                    } else {
+                        let mut player = format!("name {row}");
+                        let mut rank = row;
+                        ui.add(egui::TextEdit::singleline(&mut player).hint_text("Name"));
+
+                        ui.add(
+                            egui::DragValue::new(&mut rank)
+                            .speed(1.)
+                            .range(1..=self.num_players)
+                        );
+
+                        let old_mmr = 1000;
+                        ui.label(format!("mmr {old_mmr}"));
+                    }
+
+                    ui.end_row();
+                }
+            });
+
+            if ui.button("Calculate").clicked() {
+                calculate_match();
+            }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 footer_links(ui);
@@ -103,3 +143,5 @@ fn footer_links(ui: &mut egui::Ui) {
         ui.hyperlink_to("Source", "https://github.com/astrojord/quick-mmr/");
     });
 }
+
+fn calculate_match() {}
