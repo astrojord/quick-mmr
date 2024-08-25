@@ -153,24 +153,21 @@ jobs:
       run: |
         cross build --verbose --release --target=${{ matrix.TARGET }}
 
-    - name: Stat
-      run: ls target/${{ matrix.TARGET }}/release
-
     - name: Rename
-      run: cp target/${{ matrix.TARGET }}/release/qmmr${{ matrix.EXTENSION }} qmmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
+      run: cp target/${{ matrix.TARGET }}/release/quick_mmr${{ matrix.EXTENSION }} quick_mmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
 
     - uses: actions/upload-artifact@master
       with:
-        name: qmmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
-        path: qmmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
+        name: quick_mmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
+        path: quick_mmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
 
     - uses: svenstaro/upload-release-action@v2
       name: Upload binaries to release
       if: ${{ github.event_name == 'push' }}
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: qmmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
-        asset_name: qmmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
+        file: quick_mmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
+        asset_name: quick_mmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
         tag: ${{ github.ref }}
         prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
         overwrite: true
