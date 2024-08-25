@@ -154,7 +154,7 @@ jobs:
         cross build --verbose --release --target=${{ matrix.TARGET }}
 
     - name: Stat
-      run: ls target/${{ matrix.TARGET }}
+      run: ls target/${{ matrix.TARGET }}/release
 
     - name: Rename
       run: cp target/${{ matrix.TARGET }}/release/qmmr${{ matrix.EXTENSION }} qmmr-${{ matrix.TARGET }}${{ matrix.EXTENSION }}
