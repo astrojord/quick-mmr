@@ -3,4 +3,6 @@
 # run:      typos
 
 [default.extend-words]
-egui = "egui" # Example for how to ignore a false positive
+egui = "egui"
+mmr = "mmr"
+elo = "elo"
