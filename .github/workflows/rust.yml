@@ -15,15 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - uses: moonrepo/setup-rust@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --all-features
+      - run: cargo check --all-features
 
   check_wasm:
     name: Check wasm32
