@@ -100,9 +100,6 @@ fn footer_links(ui: &mut egui::Ui) {
             "https://github.com/emilk/egui/tree/master/crates/eframe",
         );
         ui.label(" | ");
-        ui.hyperlink_to(
-            "Source",
-            "https://github.com/astrojord/quick-mmr/"
-        );
+        ui.hyperlink_to("Source", "https://github.com/astrojord/quick-mmr/");
     });
 }
