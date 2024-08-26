@@ -1,4 +1,5 @@
 use crate::mmr::{Match, Player};
+use egui::{Color32, FontId, RichText};
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
@@ -48,12 +49,7 @@ impl eframe::App for MMRApp {
 
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Put your widgets into a `SidePanel`, `TopBottomPanel`, `CentralPanel`, `Window` or `Area`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
-
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
-
             egui::menu::bar(ui, |ui| {
                 // NOTE: no File->Quit on web pages!
                 let is_web = cfg!(target_arch = "wasm32");
@@ -65,82 +61,103 @@ impl eframe::App for MMRApp {
                     });
                 }
 
-                ui.menu_button("Players", |ui| {
-                    if ui.button("Add").clicked() {
-                        // add row to grid
-                    }
-                    if ui.button("Delete").clicked() {
-                        // confirmation dialog
-                        // delete row from grid, if exists
-                        // delete player from app vec, if exists
-                    }
-                });
-                ui.add_space(400.0);
+                ui.add_space(450.0);
                 egui::widgets::global_dark_light_mode_buttons(ui);
             });
-        });
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            // ui.heading("quick multiplayer MMR");
-
-            // ui.horizontal(|ui| {
-            //     ui.label(" ");
-            // });
-
-            ui.label("Enter the players and their rankings for a match, then click Calculate to show their new MMR.");
-            ui.label("If a player didn't participate in the match, leave their rank empty.");
-            ui.label("Use the Players menu up top to add and delete players.");
-
-            // ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
-            // if ui.button("Increment").clicked() {
-            //     self.value += 1.0;
-            // }
 
             ui.separator();
+            ui.label("Enter the players and their rankings for a match, then click Calculate to show their new MMR.");
+            ui.label("If a player didn't participate in the match, leave their rank empty.");
+            ui.label("Use the Players window to view, add, and delete players. Click a player to view MMR history.");
+        });
 
-            egui::Grid::new("my_grid")
-            .striped(true)
-            .min_col_width(100.0)
-            .num_columns(3)
-            .show(ui, |ui| {
-                for row in 0..=self.num_players {
-                    if row == 0 {
-                        ui.label("Player");
-                        ui.label("Match rank");
-                        ui.label("MMR");
-                    } else {
-                        let mut player = format!("name {row}");
-                        let mut rank = row;
-                        ui.add(egui::TextEdit::singleline(&mut player).hint_text("Name"));
-
-                        ui.add(
-                            egui::DragValue::new(&mut rank)
-                            .speed(1.)
-                            .range(1..=self.num_players)
-                        );
-
-                        let old_mmr = 1000;
-                        ui.label(format!("mmr {old_mmr}"));
-                    }
-
-                    ui.end_row();
-                }
-            });
-
-            if ui.button("Calculate").clicked() {
-                let players: Vec<(Player, i32)> = Vec::new(); // instantiate this vector with stuff from the ui
-
-                if let Some(updated_players) = calculate_match(self.num_players, players) {
-                    // replace previous grid with grid from these players/mmrs
-                    println!("{:?}", updated_players);
-                }
-            }
-
+        egui::TopBottomPanel::bottom("footer_panel").show(ctx, |ui| {
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 footer_links(ui);
                 egui::warn_if_debug_build(ui);
             });
         });
+
+        egui::SidePanel::left("match_panel")
+            .resizable(false)
+            .exact_width(400.0)
+            .show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.label(
+                        RichText::new("Get MMR from Match Results")
+                            .color(Color32::LIGHT_RED)
+                            .font(FontId::proportional(14.0)),
+                    );
+                });
+
+                egui::Grid::new("player_grid")
+                    .striped(true)
+                    .min_col_width(50.0)
+                    .num_columns(3)
+                    .show(ui, |ui| {
+                        for row in 0..=self.num_players {
+                            if row == 0 {
+                                ui.label(RichText::new("Player").strong());
+                                ui.label(RichText::new("Rank").strong());
+                                ui.label(RichText::new("MMR").strong());
+                            } else {
+                                let mut player = format!("name {row}");
+                                let mut rank = row;
+                                ui.add(egui::TextEdit::singleline(&mut player).hint_text("Name"));
+
+                                ui.add(egui::DragValue::new(&mut rank).range(0..=self.num_players));
+
+                                let old_mmr = 1000;
+                                ui.label(format!("mmr {old_mmr}"));
+                            }
+
+                            ui.end_row();
+                        }
+                    });
+
+                if ui.button("Calculate").clicked() {
+                    let players: Vec<(Player, i32)> = Vec::new(); // instantiate this vector with stuff from the ui
+
+                    if let Some(updated_players) = calculate_match(self.num_players, players) {
+                        // replace previous grid with grid from these players/mmrs
+                        println!("{:?}", updated_players);
+                    }
+                }
+            });
+
+        egui::SidePanel::right("player_panel")
+            .resizable(false)
+            .exact_width(200.0)
+            .show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.label(
+                        RichText::new("Players")
+                            .color(Color32::LIGHT_RED)
+                            .font(FontId::proportional(14.0)),
+                    );
+                });
+
+                egui::Grid::new("player_grid")
+                    .striped(true)
+                    .min_col_width(50.0)
+                    .num_columns(2)
+                    .show(ui, |ui| {
+                        for row in 0..=self.num_players {
+                            if row == 0 {
+                                ui.label(RichText::new("Player").strong());
+                                ui.label(RichText::new("MMR").strong());
+                            } else {
+                                let player = format!("name {row}");
+                                ui.label(player);
+
+                                let old_mmr = 1000;
+                                ui.label(format!("mmr {old_mmr}"));
+                            }
+
+                            ui.end_row();
+                        }
+                    });
+            });
     }
 }
 
