@@ -66,12 +66,11 @@ impl Match {
                 };
 
                 let rank_diff = opponent_rank - *rank;
-                let mut s = 0.0;
-                if rank_diff > 0 {
-                    s = 1.0;
-                } else if rank_diff == 0 {
-                    s = 0.5;
-                }
+                let s = match rank_diff {
+                    0 => 0.5,
+                    1.. => 1.0,
+                    _ => 0.0,
+                };
 
                 let exp = ((opponent_mmr - current_mmr) as f64) / 400.;
                 let ea = 1. / (1. + 10.0_f64.powf(exp));
