@@ -1,21 +1,25 @@
+use crate::mmr::{Match, Player};
+
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct MMRApp {
-    // Example stuff:
-    label: String,
-
     num_players: i32,
+    players: Vec<Player>,
     // #[serde(skip)] // This how you opt-out of serialization of a field
     // value: f32,
 }
 
 impl Default for MMRApp {
     fn default() -> Self {
+        let mut v = Vec::new();
+        for i in 1..=4 {
+            let p = Player::new(format!("Player {i}"), None);
+            v.push(p);
+        }
+
         Self {
-            // Example stuff:
-            label: "Hello World!".to_owned(),
             num_players: 4,
-            // value: 2.7,
+            players: v,
         }
     }
 }
@@ -62,8 +66,14 @@ impl eframe::App for MMRApp {
                 }
 
                 ui.menu_button("Players", |ui| {
-                    if ui.button("Add").clicked() {}
-                    if ui.button("Delete").clicked() {}
+                    if ui.button("Add").clicked() {
+                        // add row to grid
+                    }
+                    if ui.button("Delete").clicked() {
+                        // confirmation dialog
+                        // delete row from grid, if exists
+                        // delete player from app vec, if exists
+                    }
                 });
                 ui.add_space(400.0);
                 egui::widgets::global_dark_light_mode_buttons(ui);
@@ -118,7 +128,12 @@ impl eframe::App for MMRApp {
             });
 
             if ui.button("Calculate").clicked() {
-                calculate_match();
+                let players: Vec<(Player, i32)> = Vec::new(); // instantiate this vector with stuff from the ui
+
+                if let Some(updated_players) = calculate_match(self.num_players, players) {
+                    // replace previous grid with grid from these players/mmrs
+                    println!("{:?}", updated_players);
+                }
             }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
@@ -144,4 +159,15 @@ fn footer_links(ui: &mut egui::Ui) {
     });
 }
 
-fn calculate_match() {}
+fn calculate_match(n: i32, player_ranks: Vec<(Player, i32)>) -> Option<Vec<(Player, i32)>> {
+    let mut m = Match::new(n);
+
+    for tup in player_ranks {
+        m.add_player(&tup.0, tup.1);
+    }
+
+    match m.update_mmr() {
+        Ok(v) => Some(v),
+        Err(..) => None,
+    }
+}
