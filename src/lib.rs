@@ -2,4 +2,6 @@
 
 mod app;
 mod mmr;
+mod panels;
+
 pub use app::MMRApp;

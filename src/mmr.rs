@@ -1,13 +1,13 @@
 #[derive(Eq, PartialEq, Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Player {
-    name: String,
-    mmr_history: Vec<i32>,
+    pub name: String,
+    pub mmr_history: Vec<i32>,
 }
 
 #[derive(Debug)]
 pub struct Match {
-    num_players: i32,
-    player_ranks: Vec<(Player, i32)>, // player, rank
+    pub num_players: i32,
+    pub player_ranks: Vec<(Player, i32)>, // player, rank
 }
 
 impl Player {
